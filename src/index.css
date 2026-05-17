@@ -1,0 +1,128 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: rgb(9 9 11);
+  }
+
+  #root {
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+}
+
+@layer components {
+
+  /* Hero Image Frame */
+  .hero-image-frame {
+    position: relative;
+    box-shadow:
+      0 24px 80px rgba(34, 197, 94, 0.18),
+      0 0 0 1px rgba(255, 255, 255, 0.06);
+  }
+
+  .hero-image-frame img {
+    filter: saturate(1.1) contrast(1.05);
+  }
+
+  .hero-image-frame::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+
+    background:
+      radial-gradient(
+        circle at 50% 45%,
+        transparent 35%,
+        rgba(9, 9, 11, 0.58) 100%
+      ),
+
+      linear-gradient(
+        135deg,
+        rgba(34, 197, 94, 0.28),
+        rgba(9, 9, 11, 0.2) 48%,
+        rgba(9, 9, 11, 0.75)
+      );
+
+    mix-blend-mode: multiply;
+  }
+
+  .hero-image-frame::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+
+    background:
+      linear-gradient(
+        to right,
+        rgba(9, 9, 11, 0.42),
+        transparent 22%,
+        transparent 78%,
+        rgba(9, 9, 11, 0.5)
+      ),
+
+      linear-gradient(
+        to bottom,
+        rgba(9, 9, 11, 0.36),
+        transparent 26%,
+        transparent 72%,
+        rgba(9, 9, 11, 0.62)
+      );
+  }
+
+  /* Snake Border */
+  .snake-border {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+
+    border: 1px solid rgba(34, 197, 94, 0.35);
+
+    box-shadow:
+      0 0 24px rgba(34, 197, 94, 0.18),
+      0 0 60px rgba(34, 197, 94, 0.08);
+  }
+
+  .snake-border::before {
+    content: "";
+    position: absolute;
+    inset: -55%;
+    z-index: -2;
+
+    background: conic-gradient(
+      from 0deg,
+      transparent 0deg,
+      transparent 260deg,
+      #22c55e 300deg,
+      #4ade80 330deg,
+      transparent 360deg
+    );
+
+    animation: snake-spin 6s linear infinite;
+  }
+
+  .snake-border::after {
+    content: "";
+    position: absolute;
+    inset: 2px;
+    z-index: -1;
+    border-radius: inherit;
+    background: rgb(24 24 27);
+  }
+}
+
+@keyframes snake-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}

@@ -1,0 +1,15 @@
+Frontend
+---------
+React
+Redux Toolkit
+Tailwind
+Chart.js
+
+Backend Services
+----------------
+Supabase Auth
+Supabase PostgreSQL
+
+External API
+------------
+CoinGecko API
