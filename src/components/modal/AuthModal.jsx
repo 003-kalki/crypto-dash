@@ -1,6 +1,7 @@
-const AuthModal = () => {
+const AuthModal = ({ onClose }) => {
   return (
-    <div className="MainWrapper flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top,#14532d_0%,#09090b_38%,#020617_100%)] px-6 py-12 text-white">
+   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-6 py-12 backdrop-blur-sm">
+
 
       {/* Modal Card */}
       <div className="relative w-full max-w-md overflow-hidden rounded-3xl border border-white/10 bg-zinc-950/85 p-1 shadow-2xl shadow-emerald-950/40 backdrop-blur-xl">
@@ -9,7 +10,10 @@ const AuthModal = () => {
 
         <div className="relative rounded-[22px] border border-white/10 bg-zinc-950/80 p-7">
           {/* Close Button */}
-          <button className="absolute right-5 top-5 grid h-9 w-9 place-items-center rounded-full border border-white/10 bg-white/5 text-sm text-zinc-400 transition hover:border-emerald-400 hover:text-white">
+          <button
+          onClick={onClose}
+
+          className="absolute right-5 top-5 grid h-9 w-9 place-items-center rounded-full border border-white/10 bg-white/5 text-sm text-zinc-400 transition hover:border-emerald-400 hover:text-white">
             X
           </button>
 
