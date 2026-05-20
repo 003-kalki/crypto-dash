@@ -41,4 +41,3 @@ const Navbar = ({onOpenAuthModal}) => {
   );
 }
 export default Navbar;
-3

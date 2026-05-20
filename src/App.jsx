@@ -1,20 +1,14 @@
-import './App.css'
-import { useState } from 'react'
-import HeroSection from './components/Hero/HeroSection'
-import AuthModal from "./components/modal/AuthModal";
-import Navbar from './components/navbar/Navbar'
+import { Routes, Route } from "react-router-dom";
+import Home from "./pages/Home";
+import DashboardPage from "./pages/DashboardPage";
+
 function App() {
-  const [isAuthModalOpen,setIsAuthModalOpen] = useState(false)
   return (
-    <>
-        <Navbar onOpenAuthModal={() => setIsAuthModalOpen(true)}/>
-        <HeroSection onOpenAuthModal={()=>setIsAuthModalOpen(true) }/>
-        
-         {isAuthModalOpen && (
-        <AuthModal onClose={() => setIsAuthModalOpen(false)} />
-      )}
-    </>
-  )
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/dashboard" element={<DashboardPage />} />
+    </Routes>
+  );
 }
 
-export default App
+export default App;
