@@ -1,0 +1,40 @@
+Features:
+- Google login/logout
+- Remember user profile
+- Remember selected currency
+- Save watchlist coins
+- Save portfolio holdings
+- Fetch live market/chart data
+
+Persisted data:
+- users
+- preferences
+- watchlists
+- portfolios
+
+External data:
+- coin prices
+- market list
+- charts
+- exchange rates
+
+Protected routes:
+- preferences
+- watchlist
+- portfolio
+
+Public routes:
+- auth/google
+- auth/google/callback
+- crypto market data, optional
+
+Controllers:
+- authController
+- preferenceController
+- watchlistController
+- portfolioController
+- cryptoController
+
+Services:
+- cryptoService
+- tokenService, optional

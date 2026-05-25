@@ -1,6 +1,9 @@
 import Sidebar from "../layout/Sidebar";
 import CoinSearchBar from "../crypto/CoinSearchBar";
 import BaseCurrencySelector from "../currency/BaseCurrencySelector";
+import ExchangeCoins from "../currency/ExchangeCoins";
+import MarketChartSection from "../charts/MarketChartSection";
+import Portfolio from "../portfolio/Portfolio";
 
 const Dashboard = () => {
   return (
@@ -10,8 +13,13 @@ const Dashboard = () => {
           <div className="mb-6 flex items-center gap-3">
             <BaseCurrencySelector />
             <CoinSearchBar />
+            
           </div>
-
+          <MarketChartSection/>
+          <div className="mt-8 grid gap-6 xl:grid-cols-2">
+            <Portfolio />
+            <ExchangeCoins />
+          </div>
           <p className="text-sm font-semibold uppercase tracking-wider text-emerald-300">
             Dashboard
           </p>
