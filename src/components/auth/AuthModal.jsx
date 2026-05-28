@@ -1,4 +1,7 @@
 const AuthModal = ({ onClose }) => {
+  const handleGoogleLogin =() =>{
+    window.location.href="http://localhost:5000/api/auth/google";
+  }
   return (
    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-6 py-12 backdrop-blur-sm">
 
@@ -42,7 +45,9 @@ const AuthModal = ({ onClose }) => {
 
           {/* Google Button */}
           <div className="googleBtn mt-8">
-            <button className="flex w-full items-center justify-center gap-3 rounded-2xl border-2 border-emerald-500 bg-emerald-500 px-6 py-4 font-bold text-white shadow-lg shadow-emerald-950/30 transition duration-200 hover:-translate-y-0.5 hover:bg-white hover:text-emerald-600 hover:shadow-emerald-950/30">
+            <button
+             onClick={handleGoogleLogin}
+            className="flex w-full items-center justify-center gap-3 rounded-2xl border-2 border-emerald-500 bg-emerald-500 px-6 py-4 font-bold text-white shadow-lg shadow-emerald-950/30 transition duration-200 hover:-translate-y-0.5 hover:bg-white hover:text-emerald-600 hover:shadow-emerald-950/30">
               <span className="grid h-7 w-7 place-items-center rounded-full border border-white/60 bg-white text-sm font-black text-emerald-600">
                 G
               </span>
@@ -50,9 +55,7 @@ const AuthModal = ({ onClose }) => {
             </button>
           </div>
 
-          <p className="mt-5 text-center text-xs leading-5 text-zinc-500">
-            Static UI preview. Auth logic can be connected later.
-          </p>
+          
         </div>
       </div>
 

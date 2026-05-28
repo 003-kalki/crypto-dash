@@ -5,11 +5,17 @@ import ExchangeCoins from "../currency/ExchangeCoins";
 import MarketChartSection from "../charts/MarketChartSection";
 import Portfolio from "../portfolio/Portfolio";
 
-const Dashboard = () => {
+
+const Dashboard = ({ user }) => {
   return (
     <div className="flex min-h-screen bg-zinc-950 text-white">
       <main className="flex-1 px-6 py-8">
         <section className="mx-auto max-w-7xl">
+          {user && (
+  <p className="mb-4 text-sm text-zinc-300">
+    Welcome, <span className="font-semibold text-white">{user.name}</span>
+  </p>
+)}
           <div className="mb-6 flex items-center gap-3">
             <BaseCurrencySelector />
             <CoinSearchBar />
