@@ -12,28 +12,40 @@ const DashboardPage = () => {
   const [isUnauthorized, setIsUnauthorized] = useState(false);
 
   const loadWatchlistMarkets = async (coins, baseCurrency = "USD") => {
-    if (!coins || coins.length === 0) {
+    try {
+      if (!coins || coins.length === 0) {
+        setWatchlistMarkets([]);
+        return;
+      }
+
+      const response = await api.get("/crypto/markets", {
+        params: {
+          currency: baseCurrency,
+          ids: coins.map((coin) => coin.coinId).join(","),
+          perPage: coins.length,
+        },
+      });
+
+      setWatchlistMarkets(response.data.coins);
+    } catch (error) {
+      console.error("Unable to load watchlist market data", error);
       setWatchlistMarkets([]);
-      return;
     }
-
-    const response = await api.get("/crypto/markets", {
-      params: {
-        currency: baseCurrency,
-        ids: coins.map((coin) => coin.coinId).join(","),
-        perPage: coins.length,
-      },
-    });
-
-    setWatchlistMarkets(response.data.coins);
   };
 
   useEffect(() => {
-    const getCurrentUser = async () => {
+    const loadDashboardData = async () => {
       try {
         const response = await api.get("/auth/me");
         setUser(response.data.user);
+      } catch (error) {
+        console.error("Unable to verify current user", error);
+        setIsUnauthorized(true);
+        setIsLoading(false);
+        return;
+      }
 
+      try {
         const preferenceResponse = await api.get("/preferences");
         const loadedPreferences = preferenceResponse.data.preferences;
         setPreferences(loadedPreferences);
@@ -46,14 +58,13 @@ const DashboardPage = () => {
           loadedPreferences.baseCurrency
         );
       } catch (error) {
-        console.error("Unable to load dashboard data", error);
-        setIsUnauthorized(true);
+        console.error("Unable to load dashboard preferences/watchlist", error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    getCurrentUser();
+    loadDashboardData();
   }, []);
 
   const handleBaseCurrencyChange = async (baseCurrency) => {

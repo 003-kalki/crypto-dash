@@ -49,7 +49,20 @@ const getMarketCoins = async ({
   });
 };
 
+const getCoinHistory = async ({ coinId, currency = "usd", days = 7 }) => {
+  const data = await fetchFromCoinGecko(`/coins/${coinId}/market_chart`, {
+    vs_currency: currency.toLowerCase(),
+    days,
+  });
+
+  return data.prices.map(([timestamp, price]) => ({
+    timestamp,
+    price,
+  }));
+};
+
 module.exports = {
   searchCoins,
   getMarketCoins,
+  getCoinHistory,
 };

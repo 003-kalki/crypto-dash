@@ -6,6 +6,7 @@ const authRoutes = require("./routes/authRoutes");
 const preferenceRoutes = require("./routes/preferenceRoutes");
 const watchlistRoutes = require("./routes/watchlistRoutes");
 const cryptoRoutes = require("./routes/cryptoRoutes");
+const portfolioRoutes = require("./routes/portfolioRoutes");
 const app = express();
 
 app.use(
@@ -23,6 +24,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/preferences", preferenceRoutes);
 app.use("/api/watchlist", watchlistRoutes);
 app.use("/api/crypto", cryptoRoutes);
+app.use("/api/portfolio", portfolioRoutes);
 
 app.get("/api/health", (req, res) => {
   res.status(200).json({

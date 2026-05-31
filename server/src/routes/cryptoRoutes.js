@@ -47,4 +47,25 @@ router.get("/markets", async (req, res) => {
   }
 });
 
+router.get("/:coinId/history", async (req, res) => {
+  try {
+    const { coinId } = req.params;
+    const { currency, days } = req.query;
+
+    const prices = await cryptoService.getCoinHistory({
+      coinId,
+      currency,
+      days,
+    });
+
+    res.status(200).json({
+      prices,
+    });
+  } catch (error) {
+    res.status(502).json({
+      message: "Unable to fetch chart data",
+    });
+  }
+});
+
 module.exports = router;

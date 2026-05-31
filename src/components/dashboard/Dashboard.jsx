@@ -33,7 +33,7 @@ const Dashboard = ({
             <CoinSearchBar onAddToWatchlist={onAddToWatchlist} />
             
           </div>
-          <MarketChartSection/>
+          <MarketChartSection currency={preferences?.baseCurrency || "USD"} />
           <WatchlistPanel
             watchlist={watchlist}
             markets={watchlistMarkets}
