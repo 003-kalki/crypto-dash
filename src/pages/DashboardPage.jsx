@@ -2,14 +2,15 @@ import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import Dashboard from "../components/dashboard/Dashboard";
 import api from "../services/api";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchCurrentUser } from "../features/auth/authSlice";
 
 const DashboardPage = () => {
-  const [user, setUser] = useState(null);
   const [preferences, setPreferences] = useState(null);
   const [watchlist, setWatchlist] = useState(null);
   const [watchlistMarkets, setWatchlistMarkets] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isUnauthorized, setIsUnauthorized] = useState(false);
+ 
 
   const loadWatchlistMarkets = async (coins, baseCurrency = "USD") => {
     try {
@@ -35,15 +36,12 @@ const DashboardPage = () => {
 
   useEffect(() => {
     const loadDashboardData = async () => {
-      try {
-        const response = await api.get("/auth/me");
-        setUser(response.data.user);
-      } catch (error) {
-        console.error("Unable to verify current user", error);
-        setIsUnauthorized(true);
-        setIsLoading(false);
-        return;
-      }
+     const result = await dispatch(fetchCurrentUser());
+
+     if (fetchCurrentUser.rejected.match(result)) {
+     setIsLoading(false);
+     return;
+}
 
       try {
         const preferenceResponse = await api.get("/preferences");
