@@ -1,6 +1,22 @@
 const COINGECKO_BASE_URL = "https://api.coingecko.com/api/v3";
+const cache = new Map();
+const CACHE_TTL_MS = 5 * 60 * 1000;
+
+const getCacheKey = (path, params = {}) =>
+  `${path}:${JSON.stringify(
+    Object.entries(params)
+      .filter(([, value]) => value !== undefined && value !== null && value !== "")
+      .sort(([a], [b]) => a.localeCompare(b))
+  )}`;
 
 const fetchFromCoinGecko = async (path, params = {}) => {
+  const cacheKey = getCacheKey(path, params);
+  const cached = cache.get(cacheKey);
+
+  if (cached && Date.now() - cached.createdAt < CACHE_TTL_MS) {
+    return cached.data;
+  }
+
   const url = new URL(`${COINGECKO_BASE_URL}${path}`);
 
   Object.entries(params).forEach(([key, value]) => {
@@ -12,10 +28,21 @@ const fetchFromCoinGecko = async (path, params = {}) => {
   const response = await fetch(url);
 
   if (!response.ok) {
+    if (cached) {
+      return cached.data;
+    }
+
     throw new Error(`CoinGecko request failed with status ${response.status}`);
   }
 
-  return response.json();
+  const data = await response.json();
+
+  cache.set(cacheKey, {
+    createdAt: Date.now(),
+    data,
+  });
+
+  return data;
 };
 
 const searchCoins = async (query) => {

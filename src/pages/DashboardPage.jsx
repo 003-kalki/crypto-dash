@@ -1,101 +1,121 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Navigate } from "react-router-dom";
 import Dashboard from "../components/dashboard/Dashboard";
-import api from "../services/api";
-import { useDispatch, useSelector } from "react-redux";
 import { fetchCurrentUser } from "../features/auth/authSlice";
+import {
+  fetchPreferences,
+  updatePreferences,
+} from "../features/preferences/preferencesSlice";
+import {
+  addToWatchlist,
+  fetchWatchlist,
+  fetchWatchlistMarkets,
+  removeFromWatchlist,
+} from "../features/watchlist/watchlistSlice";
+import {
+  fetchPortfolio,
+  removeHolding,
+} from "../features/portfolio/portfolioSlice";
 
 const DashboardPage = () => {
-  const [preferences, setPreferences] = useState(null);
-  const [watchlist, setWatchlist] = useState(null);
-  const [watchlistMarkets, setWatchlistMarkets] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
- 
+  const dispatch = useDispatch();
 
-  const loadWatchlistMarkets = async (coins, baseCurrency = "USD") => {
-    try {
-      if (!coins || coins.length === 0) {
-        setWatchlistMarkets([]);
-        return;
-      }
+  const { user, isLoading: isAuthLoading, isUnauthorized } = useSelector(
+    (state) => state.auth
+  );
+  const { preferences, isLoading: isPreferencesLoading } = useSelector(
+    (state) => state.preferences
+  );
+  const {
+    watchlist,
+    markets: watchlistMarkets,
+    isLoading: isWatchlistLoading,
+  } = useSelector((state) => state.watchlist);
+  const { portfolio, isLoading: isPortfolioLoading } = useSelector(
+    (state) => state.portfolio
+  );
 
-      const response = await api.get("/crypto/markets", {
-        params: {
-          currency: baseCurrency,
-          ids: coins.map((coin) => coin.coinId).join(","),
-          perPage: coins.length,
-        },
-      });
-
-      setWatchlistMarkets(response.data.coins);
-    } catch (error) {
-      console.error("Unable to load watchlist market data", error);
-      setWatchlistMarkets([]);
-    }
-  };
+  const baseCurrency = preferences?.baseCurrency || "USD";
 
   useEffect(() => {
     const loadDashboardData = async () => {
-     const result = await dispatch(fetchCurrentUser());
+      const authResult = await dispatch(fetchCurrentUser());
 
-     if (fetchCurrentUser.rejected.match(result)) {
-     setIsLoading(false);
-     return;
-}
+      if (fetchCurrentUser.rejected.match(authResult)) {
+        return;
+      }
 
-      try {
-        const preferenceResponse = await api.get("/preferences");
-        const loadedPreferences = preferenceResponse.data.preferences;
-        setPreferences(loadedPreferences);
+      const [preferencesResult, watchlistResult] = await Promise.all([
+        dispatch(fetchPreferences()),
+        dispatch(fetchWatchlist()),
+        dispatch(fetchPortfolio()),
+      ]);
 
-        const watchlistResponse = await api.get("/watchlist");
-        const loadedWatchlist = watchlistResponse.data.watchlist;
-        setWatchlist(loadedWatchlist);
-        await loadWatchlistMarkets(
-          loadedWatchlist.coins,
-          loadedPreferences.baseCurrency
+      if (
+        fetchPreferences.fulfilled.match(preferencesResult) &&
+        fetchWatchlist.fulfilled.match(watchlistResult)
+      ) {
+        dispatch(
+          fetchWatchlistMarkets({
+            coins: watchlistResult.payload.coins,
+            baseCurrency: preferencesResult.payload.baseCurrency,
+          })
         );
-      } catch (error) {
-        console.error("Unable to load dashboard preferences/watchlist", error);
-      } finally {
-        setIsLoading(false);
       }
     };
 
     loadDashboardData();
-  }, []);
+  }, [dispatch]);
 
   const handleBaseCurrencyChange = async (baseCurrency) => {
-    const response = await api.put("/preferences", {
-      baseCurrency,
-    });
+    const result = await dispatch(updatePreferences({ baseCurrency }));
 
-    const updatedPreferences = response.data.preferences;
-    setPreferences(updatedPreferences);
-    await loadWatchlistMarkets(watchlist?.coins || [], updatedPreferences.baseCurrency);
+    if (updatePreferences.fulfilled.match(result)) {
+      dispatch(
+        fetchWatchlistMarkets({
+          coins: watchlist?.coins || [],
+          baseCurrency: result.payload.baseCurrency,
+        })
+      );
+    }
   };
 
   const handleAddToWatchlist = async (coin) => {
-    const response = await api.post("/watchlist", coin);
+    const result = await dispatch(addToWatchlist(coin));
 
-    const updatedWatchlist = response.data.watchlist;
-    setWatchlist(updatedWatchlist);
-    await loadWatchlistMarkets(
-      updatedWatchlist.coins,
-      preferences?.baseCurrency || "USD"
-    );
+    if (addToWatchlist.fulfilled.match(result)) {
+      dispatch(
+        fetchWatchlistMarkets({
+          coins: result.payload.coins,
+          baseCurrency,
+        })
+      );
+    }
   };
 
   const handleRemoveFromWatchlist = async (coinId) => {
-    const response = await api.delete(`/watchlist/${coinId}`);
+    const result = await dispatch(removeFromWatchlist(coinId));
 
-    const updatedWatchlist = response.data.watchlist;
-    setWatchlist(updatedWatchlist);
-    await loadWatchlistMarkets(
-      updatedWatchlist.coins,
-      preferences?.baseCurrency || "USD"
-    );
+    if (removeFromWatchlist.fulfilled.match(result)) {
+      dispatch(
+        fetchWatchlistMarkets({
+          coins: result.payload.coins,
+          baseCurrency,
+        })
+      );
+    }
   };
+
+  const handleRemoveHolding = (holdingId) => {
+    dispatch(removeHolding(holdingId));
+  };
+
+  const isLoading =
+    isAuthLoading ||
+    isPreferencesLoading ||
+    isWatchlistLoading ||
+    isPortfolioLoading;
 
   if (isLoading) {
     return <p>Loading...</p>;
@@ -111,9 +131,11 @@ const DashboardPage = () => {
       preferences={preferences}
       watchlist={watchlist}
       watchlistMarkets={watchlistMarkets}
+      portfolio={portfolio}
       onBaseCurrencyChange={handleBaseCurrencyChange}
       onAddToWatchlist={handleAddToWatchlist}
       onRemoveFromWatchlist={handleRemoveFromWatchlist}
+      onRemoveHolding={handleRemoveHolding}
     />
   );
 };

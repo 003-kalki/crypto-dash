@@ -3,6 +3,7 @@ import CoinSearchBar from "../crypto/CoinSearchBar";
 import BaseCurrencySelector from "../currency/BaseCurrencySelector";
 import ExchangeCoins from "../currency/ExchangeCoins";
 import MarketChartSection from "../charts/MarketChartSection";
+import MarketCapPieChart from "../charts/MarketCapPieChart";
 import Portfolio from "../portfolio/Portfolio";
 import WatchlistPanel from "../crypto/WatchlistPanel";
 
@@ -12,9 +13,11 @@ const Dashboard = ({
   preferences,
   watchlist,
   watchlistMarkets,
+  portfolio,
   onBaseCurrencyChange,
   onAddToWatchlist,
   onRemoveFromWatchlist,
+  onRemoveHolding,
 }) => {
   return (
     <div className="flex min-h-screen bg-zinc-950 text-white">
@@ -41,21 +44,14 @@ const Dashboard = ({
             onRemoveFromWatchlist={onRemoveFromWatchlist}
           />
           <div className="mt-8 grid gap-6 xl:grid-cols-2">
-            <Portfolio />
+            <Portfolio portfolio={portfolio} onRemoveHolding={onRemoveHolding} />
+            <MarketCapPieChart currency={preferences?.baseCurrency || "USD"} />
             <ExchangeCoins />
           </div>
-          <p className="text-sm font-semibold uppercase tracking-wider text-emerald-300">
-            Dashboard
-          </p>
+          
 
-          <h1 className="mt-3 text-4xl font-black">
-            Crypto Market Overview
-          </h1>
-
-          <p className="mt-3 max-w-2xl text-zinc-400">
-            This is the dashboard container. Add layout, currency, crypto,
-            chart, search, and filter components here as you build them.
-          </p>
+         
+        
         </section>
       </main>
 
