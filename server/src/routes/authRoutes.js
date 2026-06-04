@@ -2,11 +2,23 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 
 const passport = require("../config/passport");
+const { hasGoogleOAuthConfig } = require("../config/env");
 const requireAuth = require("../middleware/authMiddleware");
 const router = express.Router();
 
+const requireGoogleOAuthConfig = (req, res, next) => {
+  if (!hasGoogleOAuthConfig()) {
+    return res.status(503).json({
+      message: "Google OAuth is not configured",
+    });
+  }
+
+  next();
+};
+
 router.get(
   "/google",
+  requireGoogleOAuthConfig,
   passport.authenticate("google", {
     scope: ["profile", "email"],
     session: false,
@@ -15,6 +27,7 @@ router.get(
 
 router.get(
   "/google/callback",
+  requireGoogleOAuthConfig,
   passport.authenticate("google", {
     session: false,
     failureRedirect: `${process.env.CLIENT_URL}/`,
