@@ -1,6 +1,9 @@
 const COINGECKO_BASE_URL = "https://api.coingecko.com/api/v3";
 const cache = new Map();
 const CACHE_TTL_MS = 5 * 60 * 1000;
+const RETRYABLE_STATUSES = new Set([408, 429, 500, 502, 503, 504]);
+
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const getCacheKey = (path, params = {}) =>
   `${path}:${JSON.stringify(
@@ -25,7 +28,17 @@ const fetchFromCoinGecko = async (path, params = {}) => {
     }
   });
 
-  const response = await fetch(url);
+  let response;
+
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    response = await fetch(url);
+
+    if (response.ok || !RETRYABLE_STATUSES.has(response.status)) {
+      break;
+    }
+
+    await wait(400);
+  }
 
   if (!response.ok) {
     if (cached) {

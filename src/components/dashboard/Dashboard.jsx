@@ -17,7 +17,11 @@ const Dashboard = ({
   onBaseCurrencyChange,
   onAddToWatchlist,
   onRemoveFromWatchlist,
+  onAddHolding,
+  onUpdateHolding,
   onRemoveHolding,
+  onExchangeCoins,
+  portfolioError,
 }) => {
   return (
     <div className="flex min-h-screen bg-zinc-950 text-white">
@@ -44,9 +48,19 @@ const Dashboard = ({
             onRemoveFromWatchlist={onRemoveFromWatchlist}
           />
           <div className="mt-8 grid gap-6 xl:grid-cols-2">
-            <Portfolio portfolio={portfolio} onRemoveHolding={onRemoveHolding} />
+            <Portfolio
+              portfolio={portfolio}
+              error={portfolioError}
+              onAddHolding={onAddHolding}
+              onUpdateHolding={onUpdateHolding}
+              onRemoveHolding={onRemoveHolding}
+            />
             <MarketCapPieChart currency={preferences?.baseCurrency || "USD"} />
-            <ExchangeCoins />
+            <ExchangeCoins
+              portfolio={portfolio}
+              currency={preferences?.baseCurrency || "USD"}
+              onExchange={onExchangeCoins}
+            />
           </div>
           
 

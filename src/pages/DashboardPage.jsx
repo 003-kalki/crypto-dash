@@ -14,8 +14,10 @@ import {
   removeFromWatchlist,
 } from "../features/watchlist/watchlistSlice";
 import {
+  addHolding,
   fetchPortfolio,
   removeHolding,
+  updateHolding,
 } from "../features/portfolio/portfolioSlice";
 
 const DashboardPage = () => {
@@ -32,7 +34,11 @@ const DashboardPage = () => {
     markets: watchlistMarkets,
     isLoading: isWatchlistLoading,
   } = useSelector((state) => state.watchlist);
-  const { portfolio, isLoading: isPortfolioLoading } = useSelector(
+  const {
+    portfolio,
+    isLoading: isPortfolioLoading,
+    error: portfolioError,
+  } = useSelector(
     (state) => state.portfolio
   );
 
@@ -107,8 +113,53 @@ const DashboardPage = () => {
     }
   };
 
+  const handleAddHolding = (holding) => {
+    return dispatch(addHolding(holding)).unwrap();
+  };
+
+  const handleUpdateHolding = (holdingId, updates) => {
+    return dispatch(updateHolding({ holdingId, updates })).unwrap();
+  };
+
   const handleRemoveHolding = (holdingId) => {
-    dispatch(removeHolding(holdingId));
+    return dispatch(removeHolding(holdingId)).unwrap();
+  };
+
+  const handleExchangeCoins = async ({
+    sellHolding,
+    buyCoin,
+    sellAmount,
+    buyAmount,
+    buyPrice,
+    currency,
+  }) => {
+    const remainingQuantity = sellHolding.quantity - sellAmount;
+
+    if (remainingQuantity <= 0.00000001) {
+      await dispatch(removeHolding(sellHolding._id)).unwrap();
+    } else {
+      await dispatch(
+        updateHolding({
+          holdingId: sellHolding._id,
+          updates: {
+            quantity: remainingQuantity,
+            averageBuyPrice: sellHolding.averageBuyPrice,
+            currency: sellHolding.currency || currency,
+          },
+        })
+      ).unwrap();
+    }
+
+    await dispatch(
+      addHolding({
+        coinId: buyCoin.coinId,
+        symbol: buyCoin.symbol,
+        name: buyCoin.name,
+        quantity: buyAmount,
+        averageBuyPrice: buyPrice,
+        currency,
+      })
+    ).unwrap();
   };
 
   const isLoading =
@@ -132,10 +183,14 @@ const DashboardPage = () => {
       watchlist={watchlist}
       watchlistMarkets={watchlistMarkets}
       portfolio={portfolio}
+      portfolioError={portfolioError}
       onBaseCurrencyChange={handleBaseCurrencyChange}
       onAddToWatchlist={handleAddToWatchlist}
       onRemoveFromWatchlist={handleRemoveFromWatchlist}
+      onAddHolding={handleAddHolding}
+      onUpdateHolding={handleUpdateHolding}
       onRemoveHolding={handleRemoveHolding}
+      onExchangeCoins={handleExchangeCoins}
     />
   );
 };

@@ -9,7 +9,7 @@ import {
   PointElement,
   Tooltip,
 } from "chart.js";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Bar, Line } from "react-chartjs-2";
 import api from "../../services/api";
 
@@ -87,11 +87,15 @@ const MarketChartSection = ({ currency = "USD" }) => {
   const [prices, setPrices] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const requestIdRef = useRef(0);
 
   const selectedTimeline = timelines.find((item) => item.label === timeline);
   const selectedCrypto = cryptocurrencies.find((item) => item.value === crypto);
 
-  const loadChartData = async () => {
+  const loadChartData = useCallback(async () => {
+    const requestId = requestIdRef.current + 1;
+    requestIdRef.current = requestId;
+
     try {
       setIsLoading(true);
       setError("");
@@ -103,18 +107,43 @@ const MarketChartSection = ({ currency = "USD" }) => {
         },
       });
 
-      setPrices(response.data.prices);
+      if (requestId !== requestIdRef.current) {
+        return;
+      }
+
+      const nextPrices = Array.isArray(response.data.prices)
+        ? response.data.prices.filter(
+            (item) =>
+              typeof item.timestamp === "number" &&
+              typeof item.price === "number"
+          )
+        : [];
+
+      if (nextPrices.length === 0) {
+        throw new Error("Chart response did not include prices");
+      }
+
+      setPrices(nextPrices);
     } catch (chartError) {
+      if (requestId !== requestIdRef.current) {
+        return;
+      }
+
       console.error("Unable to load chart data", chartError);
-      setError("Unable to refresh chart data. Try again in a moment.");
+      setError(
+        chartError.response?.data?.message ||
+          "Unable to refresh chart data. Try again in a moment."
+      );
     } finally {
-      setIsLoading(false);
+      if (requestId === requestIdRef.current) {
+        setIsLoading(false);
+      }
     }
-  };
+  }, [crypto, currency, selectedTimeline.days]);
 
   useEffect(() => {
     loadChartData();
-  }, [crypto, currency, selectedTimeline.days]);
+  }, [loadChartData]);
 
   const chartData = useMemo(
     () => ({
@@ -226,7 +255,7 @@ const MarketChartSection = ({ currency = "USD" }) => {
       </div>
 
       <div className="mt-6 h-80 rounded-xl border border-white/10 bg-zinc-950 p-4">
-        {isLoading ? (
+        {isLoading && prices.length === 0 ? (
           <div className="flex h-full items-center justify-center text-sm text-zinc-500">
             Loading chart...
           </div>
@@ -242,6 +271,11 @@ const MarketChartSection = ({ currency = "USD" }) => {
             </div>
         ) : (
           <div className="relative h-full">
+            {isLoading && (
+              <div className="absolute left-2 top-2 z-10 rounded-lg border border-white/10 bg-zinc-950/90 px-3 py-2 text-xs font-semibold text-zinc-300">
+                Refreshing...
+              </div>
+            )}
             {error && (
               <div className="absolute right-2 top-2 z-10 flex items-center gap-2 rounded-lg border border-rose-400/30 bg-zinc-950/90 px-3 py-2 text-xs font-semibold text-rose-200">
                 <span>{error}</span>

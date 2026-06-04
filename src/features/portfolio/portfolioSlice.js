@@ -15,6 +15,34 @@ export const fetchPortfolio = createAsyncThunk(
   }
 );
 
+export const addHolding = createAsyncThunk(
+  "portfolio/addHolding",
+  async (holding, { rejectWithValue }) => {
+    try {
+      const response = await api.post("/portfolio", holding);
+      return response.data.portfolio;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Unable to add holding"
+      );
+    }
+  }
+);
+
+export const updateHolding = createAsyncThunk(
+  "portfolio/updateHolding",
+  async ({ holdingId, updates }, { rejectWithValue }) => {
+    try {
+      const response = await api.put(`/portfolio/${holdingId}`, updates);
+      return response.data.portfolio;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Unable to update holding"
+      );
+    }
+  }
+);
+
 export const removeHolding = createAsyncThunk(
   "portfolio/removeHolding",
   async (holdingId, { rejectWithValue }) => {
@@ -50,6 +78,33 @@ const portfolioSlice = createSlice({
       .addCase(fetchPortfolio.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
+      })
+      .addCase(addHolding.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(addHolding.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.portfolio = action.payload;
+      })
+      .addCase(addHolding.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
+      })
+      .addCase(updateHolding.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(updateHolding.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.portfolio = action.payload;
+      })
+      .addCase(updateHolding.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
+      })
+      .addCase(removeHolding.pending, (state) => {
+        state.error = null;
       })
       .addCase(removeHolding.fulfilled, (state, action) => {
         state.portfolio = action.payload;
