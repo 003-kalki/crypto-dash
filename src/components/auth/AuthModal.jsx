@@ -1,7 +1,11 @@
 const AuthModal = ({ onClose }) => {
-  const handleGoogleLogin =() =>{
-    window.location.href="http://localhost:5000/api/auth/google";
-  }
+  const apiBaseUrl =
+    import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+
+  const handleGoogleLogin = () => {
+    window.location.href = `${apiBaseUrl}/auth/google`;
+  };
+
   return (
    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-6 py-12 backdrop-blur-sm">
 
