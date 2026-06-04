@@ -4,6 +4,22 @@ const cryptoService = require("../services/cryptoService");
 
 const router = express.Router();
 
+const getUpstreamStatus = (error) => {
+  if (error.status === 429) {
+    return 429;
+  }
+
+  return 502;
+};
+
+const logCryptoError = (message, error) => {
+  console.error(message, {
+    message: error.message,
+    status: error.status,
+    upstreamBody: error.upstreamBody,
+  });
+};
+
 router.get("/search", async (req, res) => {
   try {
     const { query } = req.query;
@@ -20,7 +36,9 @@ router.get("/search", async (req, res) => {
       coins,
     });
   } catch (error) {
-    res.status(502).json({
+    logCryptoError("Unable to search coins", error);
+
+    res.status(getUpstreamStatus(error)).json({
       message: "Unable to search coins",
     });
   }
@@ -41,7 +59,9 @@ router.get("/markets", async (req, res) => {
       coins,
     });
   } catch (error) {
-    res.status(502).json({
+    logCryptoError("Unable to fetch market data", error);
+
+    res.status(getUpstreamStatus(error)).json({
       message: "Unable to fetch market data",
     });
   }
@@ -62,7 +82,9 @@ router.get("/:coinId/history", async (req, res) => {
       prices,
     });
   } catch (error) {
-    res.status(502).json({
+    logCryptoError("Unable to fetch chart data", error);
+
+    res.status(getUpstreamStatus(error)).json({
       message: "Unable to fetch chart data",
     });
   }

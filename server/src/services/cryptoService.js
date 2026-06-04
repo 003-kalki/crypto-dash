@@ -2,6 +2,7 @@ const COINGECKO_BASE_URL = "https://api.coingecko.com/api/v3";
 const cache = new Map();
 const CACHE_TTL_MS = 5 * 60 * 1000;
 const RETRYABLE_STATUSES = new Set([408, 429, 500, 502, 503, 504]);
+const REQUEST_TIMEOUT_MS = 10000;
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -31,7 +32,23 @@ const fetchFromCoinGecko = async (path, params = {}) => {
   let response;
 
   for (let attempt = 0; attempt < 2; attempt += 1) {
-    response = await fetch(url);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+    try {
+      response = await fetch(url, {
+        headers: {
+          accept: "application/json",
+          "user-agent": "CryptoDash/1.0",
+          ...(process.env.COINGECKO_API_KEY
+            ? { "x-cg-demo-api-key": process.env.COINGECKO_API_KEY }
+            : {}),
+        },
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
 
     if (response.ok || !RETRYABLE_STATUSES.has(response.status)) {
       break;
@@ -45,7 +62,11 @@ const fetchFromCoinGecko = async (path, params = {}) => {
       return cached.data;
     }
 
-    throw new Error(`CoinGecko request failed with status ${response.status}`);
+    const responseBody = await response.text();
+    const error = new Error(`CoinGecko request failed with status ${response.status}`);
+    error.status = response.status;
+    error.upstreamBody = responseBody.slice(0, 500);
+    throw error;
   }
 
   const data = await response.json();
